@@ -111,7 +111,7 @@ jobs:
     test:
         name: Test
         needs:
-            - lint
+            - build
         runs-on: ubuntu-latest
 
         steps:
@@ -136,7 +136,6 @@ jobs:
     publish-docker:
         name: Publish to Docker registry
         needs:
-            - build
             - test
         if: ${{ github.ref == 'refs/heads/main' }}
         runs-on: ubuntu-latest
