@@ -136,6 +136,7 @@ jobs:
     publish-docker:
         name: Publish to Docker registry
         needs:
+            - build
             - test
         if: ${{ github.ref == 'refs/heads/main' }}
         runs-on: ubuntu-latest
