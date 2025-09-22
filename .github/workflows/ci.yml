@@ -1,0 +1,159 @@
+name: CI
+
+on:
+    pull_request: {}
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
+jobs:
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+              with:
+                  fetch-depth: 0
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 'lts/*'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Check Prettier
+              run: npx prettier --check .
+
+            - name: Check Commitlint (pull request)
+              if: github.event_name == 'pull_request'
+              run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+            - name: Check Commitlint (push)
+              if: github.event_name == 'push'
+              run: npx commitlint --last --verbose
+
+            - name: Check licenses
+              run: npm run check:licenses
+
+            - name: Check types
+              run: npm run typecheck
+
+            - name: Lint
+              run: npm run lint
+
+    build:
+        name: Build
+        needs:
+            - lint
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Sanitize repository slug
+              uses: actions/github-script@v8
+              id: repository_slug
+              with:
+                  result-encoding: string
+                  script: return '${{ github.repository }}'.toLowerCase()
+
+            - name: Docker metadata
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ghcr.io/${{ steps.repository_slug.outputs.result }}
+                  tags: |
+                      type=sha,prefix=,format=long
+
+            - name: Build and push
+              uses: docker/build-push-action@v6
+              with:
+                  build-args: |
+                      RELEASE=${{ github.sha }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+                  context: .
+                  file: ./Dockerfile
+                  push: true
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+
+    test:
+        name: Test
+        needs:
+            - lint
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v5
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 'lts/*'
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build
+              run: npm run build
+
+            - name: Unit tests
+              run: npm run test:unit
+
+    publish-docker:
+        name: Publish to Docker registry
+        needs:
+            - test
+        if: ${{ github.ref == 'refs/heads/main' }}
+        runs-on: ubuntu-latest
+
+        permissions:
+            packages: write
+
+        steps:
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Tag Docker images with as latest
+              run: |
+                  DOCKER_IMAGE=ghcr.io/daniellehuisman/website
+                  docker pull $DOCKER_IMAGE:$GITHUB_SHA
+                  docker tag $DOCKER_IMAGE:$GITHUB_SHA $DOCKER_IMAGE:latest
+                  docker push $DOCKER_IMAGE:latest
