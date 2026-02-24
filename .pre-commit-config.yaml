@@ -17,7 +17,7 @@ repos:
                 - prettier-plugin-tailwindcss@^0.6.9
 
     - repo: https://github.com/pre-commit/mirrors-eslint
-      rev: v9.39.1
+      rev: v10.0.2
       hooks:
           - id: eslint
             language: node
