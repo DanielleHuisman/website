@@ -9,7 +9,8 @@
             "~assets/*": ["./assets/*"]
         },
         "rootDirs": ["."],
-        "types": ["vite/client", "vitest"]
+        "skipLibCheck": true,
+        "types": ["vite/client", "vitest/config"]
     },
     "extends": "@nixysoftware/tsconfig/react",
     "include": ["eslint.config.mjs", "vite.config.ts", "src/"]
