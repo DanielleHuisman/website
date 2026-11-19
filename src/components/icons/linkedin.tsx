@@ -29,6 +29,7 @@ const SiLinkedin: IconType = React.forwardRef<SVGSVGElement, SiLinkedInProps>(fu
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
+            role="img"
             width={size}
             height={size}
             fill={color}
