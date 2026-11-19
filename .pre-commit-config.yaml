@@ -24,13 +24,12 @@ repos:
             types: [file]
             types_or: [javascript, jsx, ts, tsx]
             additional_dependencies:
+                - '@nixysoftware/eslint-config@^2.0.0'
+                - '@nixysoftware/eslint-config-react@^2.0.0'
+                - '@nixysoftware/tsconfig@^2.0.0'
+                - '@eslint/js@^10.0.0'
                 - eslint@^10.0.0
-                - eslint-import-resolver-typescript@^4.0.0
-                - eslint-plugin-import@^2.31.0
-                - eslint-plugin-jsx-a11y@^6.10.2
-                - eslint-plugin-react@^7.37.2
-                - eslint-plugin-react-hooks@^5.1.0
-                - typescript-eslint@^8.16.0
+                - typescript-eslint@^8.73.0
 
     - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
       rev: v9.27.0
