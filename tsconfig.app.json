@@ -1,9 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
-        "jsx": "react-jsx",
-        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "moduleResolution": "bundler",
         "noEmit": true,
@@ -14,6 +11,6 @@
         "rootDirs": ["."],
         "types": ["vite/client", "vitest"]
     },
-    "extends": "./tsconfig.base.json",
+    "extends": "@nixysoftware/tsconfig/react",
     "include": ["eslint.config.mjs", "vite.config.ts", "src/"]
 }

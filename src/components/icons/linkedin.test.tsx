@@ -7,12 +7,12 @@ describe('props', () => {
     test('should render the current color when no color is provided', () => {
         render(<SiLinkedin />);
 
-        expect(screen.getByTitle('LinkedIn').parentElement).toHaveAttribute('fill', 'currentColor');
+        expect(screen.getByRole('img', { name: 'LinkedIn' })).toHaveAttribute('fill', 'currentColor');
     });
 
     test('should render the brand color when default is provided as color', () => {
         render(<SiLinkedin color="default" />);
 
-        expect(screen.getByTitle('LinkedIn').parentElement).toHaveAttribute('fill', '#0A66C2');
+        expect(screen.getByRole('img', { name: 'LinkedIn' })).toHaveAttribute('fill', '#0A66C2');
     });
 });
